@@ -4,6 +4,73 @@ import { useEffect, useRef, useCallback } from "react";
 import { useScroll, useMotionValueEvent } from "framer-motion";
 import { getFrameUrl, TOTAL_FRAMES } from "@/lib/frameUtils";
 
+export interface HeroScene {
+  id: string;
+  startFrame: number;
+  endFrame: number;
+  desktop: {
+    focusX: number;
+    focusY: number;
+  };
+  mobile: {
+    focusX: number;
+    focusY: number;
+  };
+}
+
+// Configurable focal-point scenes mapped to the video/image sequences
+// These default ranges align with the TextSection timings in Overlay.tsx
+export const heroScenes: HeroScene[] = [
+  {
+    id: "intro-abiram",
+    startFrame: 0,
+    endFrame: 43,
+    desktop: { focusX: 50, focusY: 50 },
+    // Center text - face centered but moved slightly higher to avoid text
+    mobile: { focusX: 50, focusY: 35 },
+  },
+  {
+    id: "building-intelligent-software",
+    startFrame: 44,
+    endFrame: 99,
+    desktop: { focusX: 50, focusY: 50 },
+    // Left text - subject moves slightly right
+    mobile: { focusX: 66, focusY: 50 },
+  },
+  {
+    id: "from-research",
+    startFrame: 100,
+    endFrame: 159,
+    desktop: { focusX: 50, focusY: 50 },
+    // Right text - subject moves slightly left
+    mobile: { focusX: 34, focusY: 50 },
+  },
+  {
+    id: "extraordinary",
+    startFrame: 160,
+    endFrame: 199,
+    desktop: { focusX: 50, focusY: 50 },
+    // Center text - face centered
+    mobile: { focusX: 50, focusY: 40 },
+  }
+];
+
+// Precompute scene lookup table for O(1) access during requestAnimationFrame
+// This eliminates the need for .find() during high-frequency scroll events
+const precomputedFocalPoints = Array.from({ length: TOTAL_FRAMES }, (_, index) => {
+  const scene = heroScenes.find(s => index >= s.startFrame && index <= s.endFrame) || heroScenes[0];
+  return {
+    desktop: {
+      x: scene.desktop.focusX / 100,
+      y: scene.desktop.focusY / 100,
+    },
+    mobile: {
+      x: scene.mobile.focusX / 100,
+      y: scene.mobile.focusY / 100,
+    }
+  };
+});
+
 export default function ScrollyCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,8 +101,19 @@ export default function ScrollyCanvas() {
     const scale = Math.max(canvasW / imgW, canvasH / imgH);
     const drawW = imgW * scale;
     const drawH = imgH * scale;
-    const drawX = (canvasW - drawW) / 2;
-    const drawY = (canvasH - drawH) / 2;
+
+    // Determine current precomputed focal point mapping
+    const focalPoint = precomputedFocalPoints[index] || precomputedFocalPoints[0];
+    
+    // Check if mobile (using CSS pixels). Breakpoint 768px.
+    const dpr = window.devicePixelRatio || 1;
+    const isMobile = (canvasW / dpr) < 768;
+
+    const focalX = isMobile ? focalPoint.mobile.x : focalPoint.desktop.x;
+    const focalY = isMobile ? focalPoint.mobile.y : focalPoint.desktop.y;
+
+    const drawX = (canvasW - drawW) * focalX;
+    const drawY = (canvasH - drawH) * focalY;
 
     ctx.clearRect(0, 0, canvasW, canvasH);
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
