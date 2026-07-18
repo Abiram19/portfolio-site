@@ -3,73 +3,8 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useScroll, useMotionValueEvent } from "framer-motion";
 import { getFrameUrl, TOTAL_FRAMES } from "@/lib/frameUtils";
-
-export interface HeroScene {
-  id: string;
-  startFrame: number;
-  endFrame: number;
-  desktop: {
-    focusX: number;
-    focusY: number;
-  };
-  mobile: {
-    focusX: number;
-    focusY: number;
-  };
-}
-
-// Configurable focal-point scenes mapped to the video/image sequences
-// These default ranges align with the TextSection timings in Overlay.tsx
-export const heroScenes: HeroScene[] = [
-  {
-    id: "intro-abiram",
-    startFrame: 0,
-    endFrame: 43,
-    desktop: { focusX: 50, focusY: 50 },
-    // Center text - face centered but moved slightly higher to avoid text
-    mobile: { focusX: 50, focusY: 35 },
-  },
-  {
-    id: "building-intelligent-software",
-    startFrame: 44,
-    endFrame: 99,
-    desktop: { focusX: 50, focusY: 50 },
-    // Left text - subject moves slightly right
-    mobile: { focusX: 66, focusY: 50 },
-  },
-  {
-    id: "from-research",
-    startFrame: 100,
-    endFrame: 159,
-    desktop: { focusX: 50, focusY: 50 },
-    // Right text - subject moves slightly left
-    mobile: { focusX: 34, focusY: 50 },
-  },
-  {
-    id: "extraordinary",
-    startFrame: 160,
-    endFrame: 199,
-    desktop: { focusX: 50, focusY: 50 },
-    // Center text - face centered
-    mobile: { focusX: 50, focusY: 40 },
-  }
-];
-
-// Precompute scene lookup table for O(1) access during requestAnimationFrame
-// This eliminates the need for .find() during high-frequency scroll events
-const precomputedFocalPoints = Array.from({ length: TOTAL_FRAMES }, (_, index) => {
-  const scene = heroScenes.find(s => index >= s.startFrame && index <= s.endFrame) || heroScenes[0];
-  return {
-    desktop: {
-      x: scene.desktop.focusX / 100,
-      y: scene.desktop.focusY / 100,
-    },
-    mobile: {
-      x: scene.mobile.focusX / 100,
-      y: scene.mobile.focusY / 100,
-    }
-  };
-});
+import { getFrameFocalPoint } from "./render/frameLookup";
+import DebugOverlay from "./render/DebugOverlay";
 
 export default function ScrollyCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,6 +13,11 @@ export default function ScrollyCanvas() {
   const currentFrameRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const timersRef = useRef<NodeJS.Timeout[]>([]);
+
+  // Orchestration state refs for DebugOverlay (zero React rerenders during scroll)
+  const debugMetricsRef = useRef({ canvasW: 0, canvasH: 0, drawW: 0, drawH: 0 });
+  const liveFocalPointRef = useRef<{ x: number; y: number } | null>(null);
+  const debugOverrideFrameRef = useRef<number | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -102,15 +42,26 @@ export default function ScrollyCanvas() {
     const drawW = imgW * scale;
     const drawH = imgH * scale;
 
+    // Store metrics for debug overlay to access without causing rerenders
+    if (process.env.NODE_ENV === "development") {
+      debugMetricsRef.current = { canvasW, canvasH, drawW, drawH };
+    }
+
     // Determine current precomputed focal point mapping
-    const focalPoint = precomputedFocalPoints[index] || precomputedFocalPoints[0];
+    const focalPoint = getFrameFocalPoint(index);
     
     // Check if mobile (using CSS pixels). Breakpoint 768px.
     const dpr = window.devicePixelRatio || 1;
     const isMobile = (canvasW / dpr) < 768;
 
-    const focalX = isMobile ? focalPoint.mobile.x : focalPoint.desktop.x;
-    const focalY = isMobile ? focalPoint.mobile.y : focalPoint.desktop.y;
+    let focalX = isMobile ? focalPoint.mobile.x : focalPoint.desktop.x;
+    let focalY = isMobile ? focalPoint.mobile.y : focalPoint.desktop.y;
+
+    // Apply active debug overlay focal overrides safely
+    if (process.env.NODE_ENV === "development" && isMobile && liveFocalPointRef.current) {
+      focalX = liveFocalPointRef.current.x / 100;
+      focalY = liveFocalPointRef.current.y / 100;
+    }
 
     const drawX = (canvasW - drawW) * focalX;
     const drawY = (canvasH - drawH) * focalY;
@@ -207,6 +158,11 @@ export default function ScrollyCanvas() {
 
   // Map scroll progress to frame index via RAF with fallback nearest-loaded-frame drawing
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    // If debug mode is overriding the frame, freeze scroll progression
+    if (process.env.NODE_ENV === "development" && debugOverrideFrameRef.current !== null) {
+      return;
+    }
+
     const rawIndex = Math.round(latest * (TOTAL_FRAMES - 1));
     const frameIndex = Math.max(0, Math.min(TOTAL_FRAMES - 1, rawIndex));
 
@@ -243,6 +199,27 @@ export default function ScrollyCanvas() {
     });
   });
 
+  // Debug methods
+  const handleFocalPointUpdate = useCallback((frame: number, x: number, y: number) => {
+    liveFocalPointRef.current = { x, y };
+    // We intentionally ignore triggering a redraw here if we only updated the livePoint, 
+    // unless we also want the visual to instantly respond. Let's redraw.
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => drawFrame(frame));
+  }, [drawFrame]);
+
+  const handleOverrideFrame = useCallback((frame: number | null) => {
+    debugOverrideFrameRef.current = frame;
+    if (frame !== null) {
+      currentFrameRef.current = frame;
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => drawFrame(frame));
+    }
+  }, [drawFrame]);
+
+  const getMetrics = useCallback(() => debugMetricsRef.current, []);
+  const getCurrentFrame = useCallback(() => currentFrameRef.current, []);
+
   return (
     <div
       ref={containerRef}
@@ -251,6 +228,12 @@ export default function ScrollyCanvas() {
     >
       {/* Sticky viewport */}
       <div aria-hidden="true" className="sticky top-0 h-screen w-full overflow-hidden bg-[#0d0d0d]">
+        <DebugOverlay 
+          getCurrentFrame={getCurrentFrame}
+          overrideFrame={handleOverrideFrame}
+          onFocalPointUpdate={handleFocalPointUpdate}
+          getMetrics={getMetrics}
+        />
         <canvas
           ref={canvasRef}
           className="absolute inset-0"
