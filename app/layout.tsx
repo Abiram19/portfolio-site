@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { BASE_URL, OG_IMAGE_DEFAULT, SITE_NAME } from "@/lib/seo";
@@ -168,6 +169,7 @@ export default function RootLayout({
       </head>
       <body className="bg-[#0d0d0d] text-white overflow-x-hidden antialiased">
         {children}
+        <GoogleAnalytics gaId="G-LT5XVDQ8KZ" />
       </body>
     </html>
   );
