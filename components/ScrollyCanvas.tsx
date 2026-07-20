@@ -32,27 +32,30 @@ export default function ScrollyCanvas() {
 
     if (!canvas || !ctx || !img || !img.complete) return;
 
-    const canvasW = canvas.width;
-    const canvasH = canvas.height;
+    // ctx.scale(dpr, dpr) is applied after each resize, so all draw calls
+    // operate in CSS-pixel coordinate space. We must use CSS pixel dimensions
+    // for all cover math — NOT canvas.width which is in physical pixels.
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.width / dpr;
+    const cssH = canvas.height / dpr;
     const imgW = img.naturalWidth;
     const imgH = img.naturalHeight;
 
-    // object-fit: cover math
-    const scale = Math.max(canvasW / imgW, canvasH / imgH);
+    // object-fit: cover math (in CSS pixel space)
+    const scale = Math.max(cssW / imgW, cssH / imgH);
     const drawW = imgW * scale;
     const drawH = imgH * scale;
 
     // Store metrics for debug overlay to access without causing rerenders
     if (process.env.NODE_ENV === "development") {
-      debugMetricsRef.current = { canvasW, canvasH, drawW, drawH };
+      debugMetricsRef.current = { canvasW: cssW, canvasH: cssH, drawW, drawH };
     }
 
     // Determine current precomputed focal point mapping
     const focalPoint = getFrameFocalPoint(index);
     
     // Check if mobile (using CSS pixels). Breakpoint 768px.
-    const dpr = window.devicePixelRatio || 1;
-    const isMobile = (canvasW / dpr) < 768;
+    const isMobile = cssW < 768;
 
     let focalX = isMobile ? focalPoint.mobile.x : focalPoint.desktop.x;
     let focalY = isMobile ? focalPoint.mobile.y : focalPoint.desktop.y;
@@ -63,10 +66,10 @@ export default function ScrollyCanvas() {
       focalY = liveFocalPointRef.current.y / 100;
     }
 
-    const drawX = (canvasW - drawW) * focalX;
-    const drawY = (canvasH - drawH) * focalY;
+    const drawX = (cssW - drawW) * focalX;
+    const drawY = (cssH - drawH) * focalY;
 
-    ctx.clearRect(0, 0, canvasW, canvasH);
+    ctx.clearRect(0, 0, cssW, cssH);
     ctx.drawImage(img, drawX, drawY, drawW, drawH);
   }, []);
 
@@ -227,7 +230,7 @@ export default function ScrollyCanvas() {
       style={{ height: "500vh" }}
     >
       {/* Sticky viewport */}
-      <div aria-hidden="true" className="sticky top-0 h-screen w-full overflow-hidden bg-[#0d0d0d]">
+      <div aria-hidden="true" className="sticky top-0 h-screen w-full overflow-hidden bg-[#0d0d0d]" style={{ maxWidth: "100vw" }}>
         <DebugOverlay 
           getCurrentFrame={getCurrentFrame}
           overrideFrame={handleOverrideFrame}

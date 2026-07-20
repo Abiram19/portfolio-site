@@ -30,6 +30,8 @@
 html {
   scroll-behavior: smooth;
   background-color: #0d0d0d;
+  /* iOS Safari requires overflow-x on html (not just body) to prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 body {
