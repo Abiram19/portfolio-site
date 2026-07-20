@@ -24,11 +24,15 @@ export default function PageWrapper({
         <style>{`.js-loading-wrapper { opacity: 1 !important; transition: none !important; }`}</style>
       </noscript>
       <LoadingScreen onComplete={() => setLoaded(true)} />
+      {/* overflow-x:hidden on this inner wrapper (not html/body) safely clips horizontal
+       * overflow on iOS Safari without breaking position:sticky on descendants. */}
       <div
         className="js-loading-wrapper"
         style={{
           opacity: loaded ? 1 : 0,
           transition: loaded ? "opacity 0.6s ease 0.1s" : "none",
+          overflowX: "hidden",
+          width: "100%",
         }}
       >
         {children}
