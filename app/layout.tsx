@@ -168,7 +168,7 @@ export default function RootLayout({
           fetchPriority="high"
         />
       </head>
-      <body className="bg-[#0d0d0d] text-white overflow-x-hidden antialiased">
+      <body className="bg-[#0d0d0d] text-white antialiased">
         {children}
         <ClarityProvider />
         <GoogleAnalytics gaId="G-LT5XVDQ8KZ" />

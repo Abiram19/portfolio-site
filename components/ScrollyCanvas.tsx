@@ -230,7 +230,7 @@ export default function ScrollyCanvas() {
       style={{ height: "500vh" }}
     >
       {/* Sticky viewport */}
-      <div aria-hidden="true" className="sticky top-0 h-screen w-full overflow-hidden bg-[#0d0d0d]" style={{ maxWidth: "100vw" }}>
+      <div aria-hidden="true" className="sticky top-0 h-screen w-full overflow-hidden bg-[#0d0d0d]">
         <DebugOverlay 
           getCurrentFrame={getCurrentFrame}
           overrideFrame={handleOverrideFrame}
