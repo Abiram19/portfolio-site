@@ -881,7 +881,7 @@ export default function About() {
       id="about"
       ref={ref}
       aria-labelledby="about-heading"
-      className="page-container relative py-36 md:py-48 border-t border-white/5"
+      className="page-container relative py-36 md:py-48 border-t border-white/5 overflow-hidden"
     >
       {/* Ambient background glows */}
       <div

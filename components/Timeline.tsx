@@ -257,7 +257,7 @@ export default function Timeline() {
       id="timeline"
       ref={ref}
       aria-labelledby="timeline-heading"
-      className="page-container relative py-36 md:py-48 border-t border-white/5"
+      className="page-container relative py-36 md:py-48 border-t border-white/5 overflow-hidden"
     >
       {/* Ambient glow */}
       <div

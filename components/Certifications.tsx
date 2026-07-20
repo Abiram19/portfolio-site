@@ -14,7 +14,7 @@ export default function Certifications() {
       id="certifications"
       ref={ref}
       aria-labelledby="certifications-heading"
-      className="page-container relative py-48 md:py-60 border-t border-white/5"
+      className="page-container relative py-48 md:py-60 border-t border-white/5 overflow-hidden"
     >
       {/* Background glow */}
       <div

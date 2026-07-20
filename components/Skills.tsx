@@ -13,7 +13,7 @@ export default function Skills() {
       id="skills"
       ref={ref}
       aria-labelledby="skills-heading"
-      className="page-container relative py-48 md:py-60 border-t border-white/5"
+      className="page-container relative py-48 md:py-60 border-t border-white/5 overflow-hidden"
     >
       {/* Background glow */}
       <div
