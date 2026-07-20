@@ -275,7 +275,7 @@ export default function LoadingScreen({
                   SYSTEM BOOT SEQUENCE
                 </motion.p>
                 <p
-                  className="text-2xl sm:text-3xl md:text-4xl font-black font-mono tracking-[0.16em] uppercase"
+                  className="text-lg sm:text-3xl md:text-4xl font-black font-mono tracking-[0.08em] sm:tracking-[0.16em] uppercase px-4"
                   style={{
                     color: "#00E5FF",
                     textShadow:
@@ -336,7 +336,7 @@ export default function LoadingScreen({
                   IDENTIFYING ENGINEER
                 </motion.p>
                 <p
-                  className="text-xl sm:text-2xl md:text-3xl font-black font-mono tracking-[0.12em] uppercase"
+                  className="text-base sm:text-2xl md:text-3xl font-black font-mono tracking-[0.06em] sm:tracking-[0.12em] uppercase px-4"
                   style={{
                     color: "#00E5FF",
                     textShadow: "0 0 30px rgba(0,229,255,0.4)",
@@ -610,8 +610,8 @@ export default function LoadingScreen({
                     }}
                   >
                     <p
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-black tracking-[0.07em] uppercase whitespace-nowrap"
-                      style={{ color: "#00E5FF", opacity: 0.65 }}
+                      className="font-black tracking-[0.03em] sm:tracking-[0.07em] uppercase whitespace-nowrap"
+                      style={{ color: "#00E5FF", opacity: 0.65, fontSize: "clamp(1.15rem, 5.2vw, 3.5rem)" }}
                     >
                       ABIRAM PATHMANATHAN
                     </p>
@@ -630,24 +630,25 @@ export default function LoadingScreen({
                     }}
                   >
                     <p
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-black tracking-[0.07em] uppercase whitespace-nowrap"
-                      style={{ color: "#7CFF6B", opacity: 0.45 }}
+                      className="font-black tracking-[0.03em] sm:tracking-[0.07em] uppercase whitespace-nowrap"
+                      style={{ color: "#7CFF6B", opacity: 0.45, fontSize: "clamp(1.15rem, 5.2vw, 3.5rem)" }}
                     >
                       ABIRAM PATHMANATHAN
                     </p>
                   </motion.div>
                   {/* Main text — letter-spacing reveal */}
                   <motion.p
-                    className="relative text-3xl sm:text-4xl md:text-5xl lg:text-[3.5rem] font-black tracking-[0.07em] uppercase whitespace-nowrap"
+                    className="relative font-black tracking-[0.03em] sm:tracking-[0.07em] uppercase whitespace-nowrap"
                     style={{
+                      fontSize: "clamp(1.15rem, 5.2vw, 3.5rem)",
                       background:
                         "linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.88) 45%, rgba(0,229,255,0.82) 100%)",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",
                       filter: "drop-shadow(0 0 28px rgba(0,229,255,0.22))",
                     }}
-                    initial={{ opacity: 0, letterSpacing: "0.28em" }}
-                    animate={{ opacity: 1, letterSpacing: "0.07em" }}
+                    initial={{ opacity: 0, letterSpacing: "0.12em" }}
+                    animate={{ opacity: 1, letterSpacing: "0.04em" }}
                     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
                   >
                     ABIRAM PATHMANATHAN
@@ -656,7 +657,7 @@ export default function LoadingScreen({
 
                 {/* Subtitle */}
                 <motion.p
-                  className="text-[11px] font-mono tracking-[0.45em] uppercase"
+                  className="text-[9px] sm:text-[11px] font-mono tracking-[0.18em] sm:tracking-[0.45em] uppercase text-center"
                   style={{ color: "rgba(0,229,255,0.55)" }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
