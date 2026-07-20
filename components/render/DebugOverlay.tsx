@@ -63,6 +63,10 @@ export default function DebugOverlay({
   }, [displayFrame, actualX, actualY, onFocalPointUpdate]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (process.env.NODE_ENV !== "development") return;
+    const activeTagName = document.activeElement?.tagName;
+    if (activeTagName === "INPUT" || activeTagName === "TEXTAREA") return;
+
     if (e.key === "PageUp") {
       e.preventDefault();
       setManualFrame(prev => Math.max(0, (prev !== null ? prev : polledFrame) - 1));
