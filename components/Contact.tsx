@@ -491,7 +491,7 @@ export default function Contact() {
                         type="email"
                         placeholder="your@email.com"
                         value={email}
-                        onChange={setEmail}
+                        onChange={(v) => setEmail(v.replace(/\s/g, ""))}
                       />
                     </div>
                     <GlassInput
