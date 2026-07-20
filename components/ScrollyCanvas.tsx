@@ -54,17 +54,8 @@ export default function ScrollyCanvas() {
     // Determine current precomputed focal point mapping
     const focalPoint = getFrameFocalPoint(index);
     
-    // Check if mobile (using CSS pixels). Breakpoint 768px.
-    const isMobile = cssW < 768;
-
-    let focalX = isMobile ? focalPoint.mobile.x : focalPoint.desktop.x;
-    let focalY = isMobile ? focalPoint.mobile.y : focalPoint.desktop.y;
-
-    // Apply active debug overlay focal overrides safely
-    if (process.env.NODE_ENV === "development" && isMobile && liveFocalPointRef.current) {
-      focalX = liveFocalPointRef.current.x / 100;
-      focalY = liveFocalPointRef.current.y / 100;
-    }
+    let focalX = 0.5;
+    let focalY = 0.5;
 
     const drawX = (cssW - drawW) * focalX;
     const drawY = (cssH - drawH) * focalY;
